@@ -101,7 +101,7 @@ def cwt_time(data, wavelet, widths, dt, axis):
         norm = (dt / width) ** .5
         wavelet_data = norm * wavelet(t, width)
         output[ind, :] = scipy.signal.fftconvolve(data,
-                                                  wavelet_data[slices],
+                                                  wavelet_data[tuple(slices)],
                                                   mode='same')
     return output
 
@@ -113,7 +113,7 @@ def cwt_freq(data, wavelet, widths, dt, axis):
     pN = int(2 ** np.ceil(np.log2(N)))
     # N.B. padding in fft adds zeros to the *end* of the array,
     # not equally either end.
-    fft_data = scipy.fft(data, n=pN, axis=axis)
+    fft_data = scipy.fft.fft(data, n=pN, axis=axis)
     # frequencies
     w_k = np.fft.fftfreq(pN, d=dt) * 2 * np.pi
 
@@ -129,7 +129,7 @@ def cwt_freq(data, wavelet, widths, dt, axis):
     slices = [slice(None)] + [None for _ in data.shape]
     slices[axis] = slice(None)
 
-    out = scipy.ifft(fft_data[None] * wavelet_data.conj()[slices],
+    out = scipy.fft.ifft(fft_data[None] * wavelet_data.conj()[tuple(slices)],
                      n=pN, axis=axis)
 
     # remove zero padding
@@ -137,9 +137,9 @@ def cwt_freq(data, wavelet, widths, dt, axis):
     slices[axis] = slice(None, N)
 
     if data.ndim == 1:
-        return out[slices].squeeze()
+        return out[tuple(slices)].squeeze()
     else:
-        return out[slices]
+        return out[tuple(slices)]
 
 
 class WaveletTransform(object):
